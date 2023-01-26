@@ -2,17 +2,17 @@ trigger:
 - '*'
 
 variables:
-  buildConfiguration: 'Release'
+  webRepository: 'web'
+  tag: '$(Build.BuildId)'
 
-stages:
 - stage: 'Build'
-  displayName: 'Build the web application'
-  jobs: 
+  displayName: 'Build and push'
+  jobs:  
   - job: 'Build'
     displayName: 'Build job'
     pool:
       vmImage: 'ubuntu-20.04'
-    steps:     
+    steps:
     - task: Docker@2
       displayName: 'Build and push the image to container registry'
       inputs:
@@ -23,8 +23,6 @@ stages:
         containerRegistry: 'Container Registry Connection'
         tags: |
           $(tag)
-
-
     variables:
       wwwrootDir: 'Tailspin.SpaceGame.Web/wwwroot'
       dotnetSdkVersion: '6.x'
@@ -76,10 +74,11 @@ stages:
       artifact: drop
 
 - stage: 'Deploy'
-  displayName: 'Deploy the web application'
+  displayName: 'Deploy the container'
   dependsOn: Build
   jobs:
-  - deployment: Deploy
+  - job: 'Deploy'
+    displayName: 'Deploy job'
     pool:
       vmImage: 'ubuntu-20.04'
     variables:
